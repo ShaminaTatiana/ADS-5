@@ -5,64 +5,62 @@
 
 template<typename T>
 class TPQueue {
+  struct ITEM {
+    T data;
+    ITEM *next;
+  };
+
  private:
-struct ITEM {
-T data;
-ITEM* next;
-ITEM* prev;
-};
-ITEM* head;
-ITEM* tail;
-TPQueue::ITEM* create(const T& data, ITEM*prev) {
-ITEM* item = new ITEM;
-item->data = data;
-item->next = nullptr;
-item->prev = prev;
-return item;
-}
+  ITEM *head;
+  ITEM *tail;
+  ITEM *create(T data) {
+    ITEM *t = new ITEM;
+    t->data = data;
+    t->next = nullptr;
+    return t;
+  }
 
  public:
-TPQueue() :head(nullptr), tail(nullptr) {}
-~TPQueue() {
-while (head)
-pop();
-}
-void push(const T& data) {
-if (tail && head) {
-ITEM* current = tail;
-while (current && data.prior > (current->data).prior) {
-current = current->prev;
-}
-if (current) {
-ITEM* temp = current->next;
-current->next = create(data, current);
-current = current->next;
-current->next = temp;
-if (temp)
-temp->prev = current;
-else
-tail = current;
-} else {
-current = create(data, nullptr);
-current->next = head;
-head->prev = current;
-head = current;
-}
-} else {
-head = create(data, nullptr);
-tail = head;
-}
-}
-T pop() {
-assert(head);
-ITEM* temp = head->next;
-T data = head->data;
-if (temp)
-temp->prev = nullptr;
-delete head;
-head = temp;
-return data;
-}
+  TPQueue() :head(nullptr), tail(nullptr) {}
+  ~TPQueue() {
+    while (head)
+      pop();
+  }
+  void push(const T &data) {
+    if (tail && head) {
+      ITEM *temp = head;
+      if (temp->data.prior < data.prior) {
+        temp = create(data);
+        temp->next = head;
+        head = temp;
+      } else {
+        while (temp->next) {
+          if (temp->next->data.prior < data.prior) {
+            ITEM *t = create(data);
+            t->next = temp->next;
+            temp->next = t;
+            break;
+          } else {
+            temp = temp->next;
+          }
+        }
+      }
+      if (!temp->next) {
+        tail->next = create(data);
+        tail = tail->next;
+      }
+    } else {
+      head = create(data);
+      tail = head;
+    }
+  }
+  T pop() {
+    ITEM *temp = head->next;
+    T data = head->data;
+    delete head;
+    head = temp;
+    return data;
+  }
 };
 
 struct SYM {
